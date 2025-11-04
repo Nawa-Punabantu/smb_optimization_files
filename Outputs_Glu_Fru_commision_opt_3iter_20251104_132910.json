@@ -1,0 +1,49 @@
+{
+    "Description": [
+        "Description: Optimizting the Glu-Fru system for the sythetic solution on PCR.Ca. 3 iterations. [1 1 1 1] configuration. We placed a upper flowrate constraint of 1<Q<12 L/h"
+    ],
+    "rec_raff_vals": [
+        [
+            0.5409125445654613
+        ],
+        [
+            0.8598341072440219
+        ],
+        [
+            0.7727982027418199
+        ]
+    ],
+    "rec_ext_vals": [
+        [
+            0.1859138873691251
+        ],
+        [
+            0.014284189341139907
+        ],
+        [
+            0.06328579056295813
+        ]
+    ],
+    "pur_raff_vals": [
+        [
+            0.5769045217269415
+        ],
+        [
+            0.5754902500444543
+        ],
+        [
+            0.5740386246782337
+        ]
+    ],
+    "pur_ext_vals": [
+        [
+            0.3991792594518196
+        ],
+        [
+            0.37513589385216844
+        ],
+        [
+            0.38463376214761075
+        ]
+    ]
+}

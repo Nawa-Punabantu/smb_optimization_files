@@ -1521,6 +1521,8 @@ def constrained_MOBO_func(batch, SMB):
     print(f" - Inputs:  {save_name_inputs}")
     print(f" - Outputs: {save_name_outputs}")
 
+    return (data_dict, all_inputs_dict)
+
 
 
     # %%
