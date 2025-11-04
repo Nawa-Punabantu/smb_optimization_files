@@ -7,4 +7,4 @@
 6. Activate the venv: conda activate smb-env
 7. Set the notebook kernel: python -m ipykernel install --user --name smb-env --display-name "SMB Workshop"
 8. (a) Launch the notebook in a browser window: jupyter lab or
-   (b) Launch the notebook in VS Code
+   (b) Launch the notebook in VS Code: code .
