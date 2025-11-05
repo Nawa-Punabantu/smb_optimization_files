@@ -51,7 +51,7 @@ def SMB(SMB_inputs):
     import warnings
     import time
 
-    iso_type, Names, color, num_comp, nx_per_col, e, D_all, Bm, zone_config, L, d_col, d_in, t_index_min, n_num_cycles, Q_internal, parameter_sets, cusotom_isotherm_params_all, kav_params_all ,grouping_type, t_simulation_end = SMB_inputs[0:]
+    iso_type, Names, color, num_comp, nx_per_col, e, D_all, zone_config, L, d_col, d_in, t_index_min, n_num_cycles, Q_internal, parameter_sets, cusotom_isotherm_params_all, kav_params_all ,grouping_type, t_simulation_end = SMB_inputs[0:]
 
     ###################### (CALCUALTED) SECONDARY INPUTS #########################
     # print(f'parameter_sets[0][C_feed]: {parameter_sets[0]['C_feed']}')

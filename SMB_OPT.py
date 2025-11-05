@@ -37,8 +37,8 @@ def constrained_MOBO_func(batch, SMB):
     SMB_inputs = batch[1]
     
     # UNPACK RESPECTIVE INPUTS
-    Description, save_name_inputs, save_name_outputs, job_max_or_min, t_reff, Q_max, Q_min, m_max, m_min, sampling_budget, optimization_budget, constraint_threshold, PF_weight, bounds, triangle_guess, x_i = opt_inputs[0:]
-    iso_type, Names, color, num_comp, nx_per_col, e, Da_all, Bm, zone_config, L, d_col, d_in, t_index_min, n_num_cycles, Q_internal, parameter_sets, cusotom_isotherm_params_all, kav_params_all, grouping_type, t_simulation_end = SMB_inputs[0:]
+    Description, save_name_inputs, save_name_outputs, job_max_or_min, t_reff, Q_max, Q_min, optimization_budget, constraint_threshold, PF_weight, bounds, triangle_guess, x_i = opt_inputs[0:]
+    iso_type, Names, color, num_comp, nx_per_col, e, Da_all, zone_config, L, d_col, d_in, t_index_min, n_num_cycles, Q_internal, parameter_sets, cusotom_isotherm_params_all, kav_params_all, grouping_type, t_simulation_end = SMB_inputs[0:]
 
     
     # SECONDARY VARIABLES
@@ -57,6 +57,7 @@ def constrained_MOBO_func(batch, SMB):
     Z2 = zone_config[1]
     Z3 = zone_config[2]
     Z4 = zone_config[3]
+    
 
 
     # - - - - -
@@ -246,8 +247,8 @@ def constrained_MOBO_func(batch, SMB):
             print(f'----------------------------------')
             # print(f'Q_internal type: {type(Q_internal)}')
 
-            SMB_inputs[12] = t_index_min  # Update t_index
-            SMB_inputs[14] = Q_internal # Update Q_internal
+            SMB_inputs[11] = t_index_min  # Update t_index
+            SMB_inputs[13] = Q_internal # Update Q_internal
 
             results = SMB(SMB_inputs)
 
@@ -315,8 +316,8 @@ def constrained_MOBO_func(batch, SMB):
 
                 # print(f'Q_internal type: {type(Q_internal)}')
                 # Update SMB_inputs:
-                SMB_inputs[12] = t_index_min  # Update t_index
-                SMB_inputs[14] = Q_internal # Update Q_internal
+                SMB_inputs[11] = t_index_min  # Update t_index
+                SMB_inputs[13] = Q_internal # Update Q_internal
 
                 results = SMB(SMB_inputs)
 
@@ -379,7 +380,7 @@ def constrained_MOBO_func(batch, SMB):
         Rec, Pur, mjs = obj_con(triangle_guess)
         print(f'Ouputs:')
         print(f'Recoveries [Raff, Ext]: {Rec}, \nPurities [Raff, Ext]: {Pur}')
-        # print(f'Done Getting {sampling_budget} Samples')
+        
         all_outputs = np.hstack((Rec, Pur))
 
         return triangle_guess, all_outputs
@@ -1070,7 +1071,6 @@ def constrained_MOBO_func(batch, SMB):
         print(f"Configuration: {zone_config}, With Grouping")
     print(f'Column Diameter: {d_col} cm')
     print(f'Optimization Budget: {optimization_budget}')
-    print(f'Sampling Budget: {sampling_budget}')
     print(f'pF_weight: {PF_weight}')
     print(f'exploration (xi): {x_i}')
     print(f'thresholds: {constraint_threshold}')
@@ -1080,7 +1080,7 @@ def constrained_MOBO_func(batch, SMB):
 #%%
     # generate iniital samples
     start_test = time.time()
-    all_initial_inputs, all_initial_outputs = generate_initial_data(triangle_guess, sampling_budget)
+    all_initial_inputs, all_initial_outputs = generate_initial_data(triangle_guess)
     end_test = time.time()
     test_duration = end_test-start_test
     print(f'----------------------')
