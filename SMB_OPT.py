@@ -37,7 +37,7 @@ def constrained_MOBO_func(batch, SMB):
     SMB_inputs = batch[1]
     
     # UNPACK RESPECTIVE INPUTS
-    Description, save_name_inputs, save_name_outputs, job_max_or_min, t_reff, Q_max, Q_min, optimization_budget, constraint_threshold, PF_weight, bounds, triangle_guess, x_i = opt_inputs[0:]
+    Description, save_name_inputs, save_name_outputs, job_max_or_min, t_reff, Q_max, Q_min, optimization_budget, constraint_threshold, PF_weight, bounds, triangle_guess, x_i, similarity_threshold = opt_inputs[0:]
     iso_type, Names, color, num_comp, nx_per_col, e, Da_all, zone_config, L, d_col, d_in, t_index_min, n_num_cycles, Q_internal, parameter_sets, cusotom_isotherm_params_all, kav_params_all, grouping_type, t_simulation_end = SMB_inputs[0:]
 
     
@@ -239,20 +239,19 @@ def constrained_MOBO_func(batch, SMB):
             Qdesorbent = Q_I - Q_IV
             Qextract = Q_I - Q_II
             Q_external = np.array([Qfeed, Qraffinate, Qdesorbent,Qextract])
-            # print(f'Q_internal: {Q_internal} cm^3/s')
+        
             print(f'----------------------------------')
             print(f'Q_internal: {Q_internal*3.6} L/h [Q1, Q2, Q3, Q4]')
-            # print(f'Q_external: {Q_external} cm^s/s')
             print(f'Q_external: {Q_external*3.6} L/h [QF, QR, QD, QE]')
             print(f'----------------------------------')
-            # print(f'Q_internal type: {type(Q_internal)}')
+      
 
             SMB_inputs[11] = t_index_min  # Update t_index
             SMB_inputs[13] = Q_internal # Update Q_internal
 
             results = SMB(SMB_inputs)
 
-            # print(f'done solving sample {i+1}')
+          
 
             raff_purity_both_comp = results[10]  # [Glu, Fru]
             ext_purity_both_comp = results[12]  # [Glu, Fru]
@@ -880,7 +879,7 @@ def constrained_MOBO_func(batch, SMB):
 
             #     # Return True if candidate is close to ANY previous point
             #     return np.any(dists < tol)
-            def is_similar_to_previous(x_candidate, X_history, t_reff):
+            def is_similar_to_previous(x_candidate, X_history, t_reff, similarity_threshold=0.02):
                 """
                 Check if x_candidate is too similar to any vector in X_history.
                 The comparison is done after rounding to 3 decimal places.
@@ -894,6 +893,10 @@ def constrained_MOBO_func(batch, SMB):
                     Candidate vector to check.
                 X_history : array-like
                     Array of previously evaluated candidates.
+                
+                    similarity_threshold : float, optional
+                    Relative difference threshold below which the candidate is considered similar.
+                    0.02 = 2% difference.
 
                 Returns
                 -------
@@ -917,7 +920,7 @@ def constrained_MOBO_func(batch, SMB):
                     # print("Relative differences:", relative_diff)
 
                     # Check if all dimensions differ by less than 1%
-                    if np.all(relative_diff <= 0.01):
+                    if np.all(relative_diff <= similarity_threshold):
                         return True  # candidate too similar
 
                 return False  # candidate is sufficiently unique
@@ -927,7 +930,7 @@ def constrained_MOBO_func(batch, SMB):
                 lows, highs = bounds[:, 0], bounds[:, 1]
                 for _ in range(max_attempts):
                     candidate = np.random.uniform(lows, highs)
-                    if not is_similar_to_previous(candidate, X_history, t_reff):
+                    if not is_similar_to_previous(candidate, X_history, t_reff, similarity_threshold):
                         return candidate
                 print("Warning: Could not find unique candidate after several attempts.")
                 return np.random.uniform(lows, highs)
