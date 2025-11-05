@@ -1459,7 +1459,7 @@ def SMB(SMB_inputs):
                 P_mflows_1_add_AVG = C_R1_add_AVG * -QR  # (g/cm^3 * cm^3/s)  =>  g/s
 
             elif row_start_matrix == row_start_matrix_ext:
-                print(f'QR:{QR}')
+                # print(f'QR:{QR}')
                 P_vflows_1_add = -QX*np.ones_like(C_R1_add)
                 P_mflows_1_add = C_R1_add * P_vflows_1_add  # (g/cm^3 * cm^3/s)  =>  g/s
                 P_mflows_1_add_AVG = C_R1_add_AVG * -QX
@@ -1785,7 +1785,7 @@ def SMB(SMB_inputs):
     #     where=denom != 0
     # )
 
-    print(f'{raff_output_recov}, {ext_output_recov}')
+    # print(f'{raff_output_recov}, {ext_output_recov}')
     # Define the data for the table
     data = {
         'Metric': [

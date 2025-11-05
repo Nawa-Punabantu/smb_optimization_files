@@ -38,7 +38,7 @@ def constrained_MOBO_func(batch, SMB):
     
     # UNPACK RESPECTIVE INPUTS
     Description, save_name_inputs, save_name_outputs, job_max_or_min, t_reff, Q_max, Q_min, m_max, m_min, sampling_budget, optimization_budget, constraint_threshold, PF_weight, bounds, triangle_guess, x_i = opt_inputs[0:]
-    iso_type, Names, color, num_comp, nx_per_col, e, Da_all, Bm, zone_config, L, d_col, d_in, t_index_min, n_num_cycles, Q_internal, parameter_sets, cusotom_isotherm_params_all, kav_params_all, subzone_set, t_simulation_end = SMB_inputs[0:]
+    iso_type, Names, color, num_comp, nx_per_col, e, Da_all, Bm, zone_config, L, d_col, d_in, t_index_min, n_num_cycles, Q_internal, parameter_sets, cusotom_isotherm_params_all, kav_params_all, grouping_type, t_simulation_end = SMB_inputs[0:]
 
     
     # SECONDARY VARIABLES
@@ -229,7 +229,7 @@ def constrained_MOBO_func(batch, SMB):
             # Unpack and convert to float and np.arrays from torch.tensors:
             m1, m2, m3, m4, t_index_min = float(X[0]), float(X[1]), float(X[2]), float(X[3]), float(X[4])
 
-            print(f'[m1, m2, m3, m4]: [{m1}, {m2}, {m3}, {m4}], t_index: {t_index_min}')
+            # print(f'[m1, m2, m3, m4]: [{m1}, {m2}, {m3}, {m4}], t_index: {t_index_min}')
 
             Q_I, Q_II, Q_III, Q_IV = mj_to_Qj(m1, t_index_min), mj_to_Qj(m2, t_index_min), mj_to_Qj(m3, t_index_min), mj_to_Qj(m4, t_index_min)
             Q_internal = np.array([Q_I, Q_II, Q_III, Q_IV]) # cm^3/s
@@ -238,12 +238,12 @@ def constrained_MOBO_func(batch, SMB):
             Qdesorbent = Q_I - Q_IV
             Qextract = Q_I - Q_II
             Q_external = np.array([Qfeed, Qraffinate, Qdesorbent,Qextract])
-            print(f'Q_internal: {Q_internal} cm^3/s')
-            print(f'Q_internal: {Q_internal*3.6} L/h')
-
+            # print(f'Q_internal: {Q_internal} cm^3/s')
             print(f'----------------------------------')
-            print(f'Q_external: {Q_external} cm^3/s')
-            print(f'Q_external: {Q_external*3.6} L/h [F, Raff, D, Ext]')
+            print(f'Q_internal: {Q_internal*3.6} L/h [Q1, Q2, Q3, Q4]')
+            # print(f'Q_external: {Q_external} cm^s/s')
+            print(f'Q_external: {Q_external*3.6} L/h [QF, QR, QD, QE]')
+            print(f'----------------------------------')
             # print(f'Q_internal type: {type(Q_internal)}')
 
             SMB_inputs[12] = t_index_min  # Update t_index
@@ -257,7 +257,7 @@ def constrained_MOBO_func(batch, SMB):
             ext_purity_both_comp = results[12]  # [Glu, Fru]
 
             # Recovery
-            # i=11,13 (raff, ext) for  relative tp feed
+            # i=11,13 (raff, ext) for  relative to feed
             # i=-2,-1 (raff, ext) for  relative to exit
             raff_recovery_both_comp = results[11]  # [Glu, Fru]
             ext_recovery_both_comp = results[13]  # [Glu, Fru]
@@ -295,7 +295,7 @@ def constrained_MOBO_func(batch, SMB):
                 # Unpack and convert to float and np.arrays from torch.tensors:
                 m1, m2, m3, m4, t_index_min = float(X[i,0]), float(X[i,1]), float(X[i,2]), float(X[i,3]), float(X[i,4])
 
-                print(f'[m1, m2, m3, m4]: [{m1}, {m2}, {m3}, {m4}], t_index: {t_index_min}')
+                # print(f'[m1, m2, m3, m4]: [{m1}, {m2}, {m3}, {m4}], t_index: {t_index_min}')
                 Q_I, Q_II, Q_III, Q_IV = mj_to_Qj(m1, t_index_min), mj_to_Qj(m2, t_index_min), mj_to_Qj(m3, t_index_min), mj_to_Qj(m4, t_index_min) 
                 Q_internal = np.array([Q_I, Q_II, Q_III, Q_IV]) # cm^3/s
                 # Calculate and display external flowrates too
@@ -305,13 +305,13 @@ def constrained_MOBO_func(batch, SMB):
                 Qextract = Q_I - Q_II
 
                 Q_external = np.array([Qfeed, Qraffinate, Qdesorbent,Qextract])
-                print(f'Q_internal: {Q_internal} cm^s/s')
-                print(f'Q_internal: {Q_internal*3.6} L/h')
-
+                # print(f'Q_internal: {Q_internal} cm^s/s')
+                # print(f'Sampled Inputs')
                 print(f'----------------------------------')
-                print(f'Q_external: {Q_external} cm^s/s')
-                print(f'Q_external: {Q_external*3.6} L/h [F, Raff, D, Ext]')
-
+                print(f'Q_internal: {Q_internal*3.6} L/h [Q1, Q2, Q3, Q4]')
+                # print(f'Q_external: {Q_external} cm^s/s')
+                print(f'Q_external: {Q_external*3.6} L/h [QF, QR, QD, QE]')
+                print(f'----------------------------------')
 
                 # print(f'Q_internal type: {type(Q_internal)}')
                 # Update SMB_inputs:
@@ -351,8 +351,8 @@ def constrained_MOBO_func(batch, SMB):
                 # print(f'Optimizing {Names[min_index]} at` the Raffinate')
                 Pur[i,:] = [pur1, pur2]
                 Rec[i,:] = [rec1, rec2]
-                print(f'Pur: {pur1}, {pur2}')
-                print(f'Rec: {rec1}, {rec2}\n\n')
+                # print(f'Pur: {pur1}, {pur2}')
+                # print(f'Rec: {rec1}, {rec2}\n\n')
 
         return  Rec, Pur, np.array([m1, m2, m3, m4, t_index_min])
 
@@ -372,9 +372,13 @@ def constrained_MOBO_func(batch, SMB):
         # print(f'Solving Over {sampling_budget} Samples')
         # print(f'\n\ntriangle_guess: {triangle_guess}')
         # print(f'train_all: {train_all}')
-
+        print('\n\n----------------------------------')
+        print(f'Trangle Guess Reuslts')
+        print('----------------------------------')
+        print(f'Inputs:')
         Rec, Pur, mjs = obj_con(triangle_guess)
-        # print(f'Rec: {Rec}, Pur: {Pur}')
+        print(f'Ouputs:')
+        print(f'Recoveries [Raff, Ext]: {Rec}, \nPurities [Raff, Ext]: {Pur}')
         # print(f'Done Getting {sampling_budget} Samples')
         all_outputs = np.hstack((Rec, Pur))
 
@@ -755,7 +759,7 @@ def constrained_MOBO_func(batch, SMB):
         ei_all = []
 
         for gen in range(optimization_budget):
-            print(f"\n\nStarting gen {gen+1}")
+            print(f"\n\n Iteration {gen+1}")
 
             # --- SCALARIZATION ---
             lam = np.random.rand()
@@ -776,11 +780,11 @@ def constrained_MOBO_func(batch, SMB):
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                print("Glu Raff Purity")
+                # print("Glu Raff Purity")
                 constraint_1_gp = surrogate_model(population, c1_vals)
                 all_constraint_1_gps.append(constraint_1_gp)
 
-                print("Fru Ext Purity")
+                # print("Fru Ext Purity")
                 constraint_2_gp = surrogate_model(population, c2_vals)
                 all_constraint_2_gps.append(constraint_2_gp)
 
@@ -928,7 +932,7 @@ def constrained_MOBO_func(batch, SMB):
                 return np.random.uniform(lows, highs)
 
             # --- OPTIMIZATION LOOP ---
-            print("Maxing ECI")
+            # print("Maxing ECI")
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
 
@@ -953,10 +957,10 @@ def constrained_MOBO_func(batch, SMB):
 
                 x_candidate = result.x  # [m1, m2, m3, m4, t_index_min]
 
-                print(f'gen: {gen}')
+                # print(f'gen: {gen}')
                 
                 # 1. Check for the Uniquness of the new candidate
-                print("Checking similarity to previous samples...")
+                # print("Checking similarity to previous samples...")
                 if is_similar_to_previous(x_candidate, all_inputs, t_reff):
                     print("Candidate too similar to previous. Generating a new one...")
                     x_candidate = generate_unique_candidate(bounds, all_inputs)
@@ -995,8 +999,8 @@ def constrained_MOBO_func(batch, SMB):
                 c2_vals = np.vstack([c2_vals.reshape(-1, 1), c_new[1]])
 
                 print(
-                    f"\nGen {gen+1} Status:\n | Sampled Inputs:{x_new[:-1]}, "
-                    f"{x_new[-1]/t_reff}|{x_new[-1]} min [m1, m2, m3, m4, t_index]|\n"
+                    f"Inputs:{x_new[:-1]}, "
+                    f"{x_new[-1]} min [m1, m2, m3, m4, t_index]|\n"
                     f"Outputs: G_f1: {f_new[0]*100} %, F_f2: {f_new[1]*100} % | "
                     f"GPur, FPur: {c_new[0]*100}%, {c_new[1]*100}%"
                 )
@@ -1004,366 +1008,6 @@ def constrained_MOBO_func(batch, SMB):
         rec_raff_vals, rec_ext_vals, pur_raff_vals, pur_ext_vals = f1_vals, f2_vals, c1_vals, c2_vals
         return rec_raff_vals, rec_ext_vals, pur_raff_vals, pur_ext_vals, all_inputs
 
-    # --- ParEGO Main Loop ---
-    # def constrained_BO(optimization_budget, bounds, all_initial_inputs, all_initial_ouputs, job_max_or_min, constraint_thresholds, xi):
-
-    #     # xi = exploration parameter (the larger it is, the more we explore)
-
-    #     # Initial values
-    #     # Unpack from: all_initial_ouputs: [GPur, FPur, GRec, FRec]
-    #     # Recovery Objectives
-    #     f1_vals = all_initial_ouputs[:,0]
-    #     f2_vals = all_initial_ouputs[:,1]
-    #     # print(f'f1_vals: {f1_vals}')
-    #     # print(f'f2_vals: {f2_vals}')
-    #     # Purity constraints
-    #     c1_vals  = all_initial_ouputs[:,2]
-    #     c2_vals  = all_initial_ouputs[:,3]
-    #     # print(f'c1-size: {np.shape(c1_vals)}')
-    #     # print(f'c2-size: {np.shape(c2_vals)}')
-
-    #     # population = np.delete(all_initial_inputs, 2, axis=1)
-    #     population = all_initial_inputs
-    #     all_inputs = all_initial_inputs # [m1, m2, m3, m4, t_index]
-    #     # print(f'np.shape(all_inputs):{np.shape(all_inputs)}')
-    #     # print(f'np.shape(all_initial_inputs):{np.shape(all_initial_inputs)}')
-
-
-    #     # Unpack from: all_initial_inputs
-
-    #     # print(f'shpae_f1_vals = {np.shape(f1_vals)}')
-
-    #     # Initialize where we will store solutions
-    #     population_all = []
-    #     all_constraint_1_gps = []
-    #     all_constraint_2_gps = []
-    #     ei_all = []
-
-
-    #     for gen in range(optimization_budget):
-    #         # generation = iteration
-    #         print(f"\n\nStarting gen {gen+1}")
-
-
-    #         # Generate random weights for scalarization
-    #         lam = np.random.rand()
-    #         weights = [lam, 1 - lam]
-    #         # print(f'weights: {weights}')
-    #         # Note that we generate new weights in each iteration/generation
-    #         # i.e. each time we update the training set
-
-    #         #SCALARIZE THE OBJECTIVES (BEFORE APPLYING GP)
-    #         phi = 0.05
-    #         scalarized_f_vals = np.maximum(weights[0]*f1_vals, weights[1]*f2_vals)
-
-    #         scalarized_f_vals += phi*(weights[0]*f1_vals + weights[1]*f2_vals)
-
-    #         scalarized_f_vals = weights[0]*f1_vals + weights[1]*f2_vals
-
-    #         # Fit GP to scalarized_surrogate_objective
-    #         # print(f'population { population}, \nscalarized_f_vals {scalarized_f_vals} ')
-    #         scalarized_surrogate_gp = surrogate_model(population, scalarized_f_vals)
-    #         # Pull mean at relevant poputlation points
-    #         # Mean & Varriance
-    #         scalarized_surrogate_gp_mean, scalarized_surrogate_gp_std = scalarized_surrogate_gp.predict(population, return_std=True)
-    #         # The best value so far:
-    #         y_best = np.max(scalarized_surrogate_gp_mean)
-    #         # y_best = 0.60
-
-
-    #         # Fit a GP to each constraint:
-    #         with warnings.catch_warnings():
-    #             warnings.simplefilter("ignore")
-
-    #             # Glu Raff Purity:
-    #             print(f'Glu Raff Purity')
-    #             constraint_1_gp = surrogate_model(population, c1_vals)
-    #             all_constraint_1_gps.append(constraint_1_gp)
-    #             # Fru Ext Purity:
-    #             print(f'Glu Ext Purity')
-    #             constraint_2_gp = surrogate_model(population, c2_vals)
-    #             all_constraint_2_gps.append(constraint_2_gp)
-
-    #         # Define the constraint function for the ei optimizer
-    #         # Constraint function with correct shape
-
-    #         # Define the non-linear constraint functions with dependencies
-    #         # note that each constraint must be written independently
-    #         # --- CONSTANTS ---
-    #         eps = 0.01  # Safety margin (1%)
-    #         small_value = 1e-6  # To avoid division by zero
-
-    #         # --- Helper: safe t_index ---
-    #         def get_safe_tindex(x):
-    #             return max(x[-1]*60*t_reff, small_value)
-
-    #         # --- CONSTRAINT FUNCTIONS ---
-
-    #         # Standard Flow Ratio Constraints:
-    #         def constraint_m1_gt_m2(x): return x[0] - (1 + eps) * x[1]
-    #         def constraint_m1_gt_m4(x): return x[0] - (1 + eps) * x[3]
-
-    #         def constraint_m2_lt_m1(x): return (1 - eps) * x[0] - x[1]
-    #         def constraint_m2_lt_m3(x): return (1 - eps) * x[2] - x[1]
-
-    #         def constraint_m3_gt_m2(x): return x[2] - (1 + eps) * x[1]
-    #         def constraint_m3_gt_m4(x): return x[2] - (1 + eps) * x[3]
-
-    #         def constraint_m4_lt_m1(x): return (1 - eps) * x[0] - x[3]
-    #         def constraint_m4_lt_m3(x): return (1 - eps) * x[2] - x[3]
-
-    #         # Pump Constraints (flow differences divided by t_index)
-    #         def constraint_feed_pump_upper(x): return m_diff_max - (x[2] - x[1]) / get_safe_tindex(x)
-    #         def constraint_feed_pump_lower(x): return (x[2] - x[1]) / get_safe_tindex(x) - m_diff_min
-
-    #         def constraint_desorb_pump_upper(x): return m_diff_max - (x[0] - x[3]) / get_safe_tindex(x)
-    #         def constraint_desorb_pump_lower(x): return (x[0] - x[3]) / get_safe_tindex(x) - m_diff_min
-
-    #         def constraint_raff_pump_upper(x): return m_diff_max - (x[2] - x[3]) / get_safe_tindex(x)
-    #         def constraint_raff_pump_lower(x): return (x[2] - x[3]) / get_safe_tindex(x) - m_diff_min
-
-    #         def constraint_extract_pump_upper(x): return m_diff_max - (x[0] - x[1]) / get_safe_tindex(x)
-    #         def constraint_extract_pump_lower(x): return (x[0] - x[1]) / get_safe_tindex(x) - m_diff_min
-
-    #         # Fixed Feed Flow Constraint
-    #         # def constraint_fixed_feed(x):
-    #         #     return (x[2] - x[1]) - (Q_fixed_feed / ((V_col * (1-e)) / get_safe_tindex(x)))
-
-    #         # --- Nonlinear Constraints Setup ---
-
-    #         nonlinear_constraints = [
-    #             NonlinearConstraint(constraint_m1_gt_m2, 0, np.inf),
-    #             NonlinearConstraint(constraint_m1_gt_m4, 0, np.inf),
-    #             NonlinearConstraint(constraint_m2_lt_m1, 0, np.inf),
-    #             NonlinearConstraint(constraint_m2_lt_m3, 0, np.inf),
-    #             NonlinearConstraint(constraint_m3_gt_m2, 0, np.inf),
-    #             NonlinearConstraint(constraint_m3_gt_m4, 0, np.inf),
-    #             NonlinearConstraint(constraint_m4_lt_m1, 0, np.inf),
-    #             NonlinearConstraint(constraint_m4_lt_m3, 0, np.inf),
-                
-    #             NonlinearConstraint(constraint_feed_pump_upper, 0, np.inf),
-    #             NonlinearConstraint(constraint_feed_pump_lower, 0, np.inf),
-                
-    #             NonlinearConstraint(constraint_desorb_pump_upper, 0, np.inf),
-    #             NonlinearConstraint(constraint_desorb_pump_lower, 0, np.inf),
-                
-    #             NonlinearConstraint(constraint_raff_pump_upper, 0, np.inf),
-    #             NonlinearConstraint(constraint_raff_pump_lower, 0, np.inf),
-                
-    #             NonlinearConstraint(constraint_extract_pump_upper, 0, np.inf),
-    #             NonlinearConstraint(constraint_extract_pump_lower, 0, np.inf),
-                
-    #             # Fixed feed constraint (Optional â€” can comment if not needed)
-    #             # NonlinearConstraint(constraint_fixed_feed, -0.001, 0.001)
-    #         ]
-
-    #         # ? Now you can pass:
-    #         # constraints=nonlinear_constraints
-    #         # into your differential_evolution call
-
-
-    #         # --- Run the optimization ---
-    #         def passes_manual_check(vec):
-    #             # Extract m1–m4
-    #             m1, m2, m3, m4 = vec[0:4]
-    #             # Check your "down–up–down–up" pattern
-    #             return (m1 > m2 and m3 > m2 and m4 < m3 and m4 < m1)
-            
-
-    #         attempt = 0
-    #         x_new = None
-    #         max_attempts = 3
-
-    #         def is_similar_to_previous(x_candidate, X_history, tol=1e-3):
-    #             """
-    #             Check if x_candidate is too similar to any previous candidate in X_history.
-    #             Uses normalized Euclidean distance for scale robustness.
-    #             """
-    #             if X_history is None or len(X_history) == 0:
-    #                 return False  # No history yet, accept candidate
-
-    #             x_candidate = np.asarray(x_candidate)
-    #             X_history = np.asarray(X_history)
-
-    #             # If all previous points are identical, handle directly
-    #             if np.allclose(X_history, X_history[0], atol=1e-12):
-    #                 return np.allclose(x_candidate, X_history[0], atol=tol)
-
-    #             # Normalize for dimension-wise comparability
-    #             mins = X_history.min(axis=0)
-    #             maxs = X_history.max(axis=0)
-    #             ranges = np.clip(maxs - mins, 1e-12, np.inf)
-    #             normalized_history = (X_history - mins) / ranges
-    #             normalized_candidate = (x_candidate - mins) / ranges
-
-    #             # Compute distances
-    #             dists = np.linalg.norm(normalized_history - normalized_candidate, axis=1)
-    #             return np.any(dists < tol)
-
-
-    #         def generate_unique_candidate(bounds, X_history, max_attempts=200):
-    #             """
-    #             Randomly generate a new unique candidate within bounds, avoiding duplicates.
-    #             """
-    #             bounds = np.array(bounds)
-
-    #             lows, highs = bounds[:, 0], bounds[:, 1]
-    #             print(f'lows: {lows}, highs: {highs}')
-    #             for _ in range(max_attempts):
-    #                 candidate = np.random.uniform(lows, highs)
-    #                 if not is_similar_to_previous(candidate, X_history):
-    #                     return candidate
-    #             print("Warning: Could not find unique candidate after several attempts.")
-    #             return np.random.uniform(lows, highs)  # fallback
-
-            
-    #         print(f'Maxing ECI')
-    #         with warnings.catch_warnings():
-    #             warnings.simplefilter("ignore")
-
-    #             result = differential_evolution(
-    #                 func=log_expected_constrained_improvement, # probability_of_improvement(x, surrogate_gp, y_best, xi=0.005), expected_improvement(x, surrogate_gp, y_best, x_i) | log_expected_constrained_improvement(x, scalarized_surrogate_gp, [constraint_1_gp, constraint_2_gp], constraint_thresholds, y_best, xi)
-    #                 bounds=bounds,
-    #                 args=(scalarized_surrogate_gp, [constraint_1_gp, constraint_2_gp], constraint_thresholds, y_best, job_max_or_min, PF_weight, xi),
-    #                 strategy='best1bin',
-    #                 maxiter=600,
-    #                 popsize=30,
-    #                 disp=False,
-    #                 constraints=(nonlinear_constraints)
-    #                 )
-
-    #             x_candidate = result.x # [m1, m2, m3, m4, t_index_min]  - with normalized time
-            
-
-    #             # === Ensure candidate is not too similar to previous ones ===4
-    #             # Test case for debugging new cadidate selections:
-    #             # gen = 30
-    #             # x_candidate = np.array([2, 1, 2, 1, 0.1])
-
-    #             # all_inputs = np.array([x_candidate,
-    #             #                        x_candidate,
-    #             #                        x_candidate,])
-                
-    #             if gen > 20:  # Only enforce after some initial exploration
-    #                 if is_similar_to_previous(x_candidate, all_inputs):  # or use X_history
-    #                     print("Candidate too similar to previous. Generating a new one...")
-    #                     x_candidate = generate_unique_candidate(bounds, all_inputs)
-    #                     print(f"New generated candidate (with norm time): {x_candidate}")
-    #                     break
-
-    #             if passes_manual_check(x_candidate):
-    #                 x_new = x_candidate
-    #                 break
-    #             else:
-    #                 print("Tweaking vector to satisfy pattern...")
-    #                 x_new = x_candidate.copy()
-    #                 x_new = x_new.tolist()
-    #                 m1, m2, m3, m4 = x_new[0:4]
-
-    #                 # Adjust values to enforce pattern:
-    #                 if not (m1 > m2): m1 = m2 + abs(m2)*0.3 + 1e-6
-    #                 if not (m3 > m2): m3 = m2 + abs(m2)*0.1 + 1e-6
-    #                 if not (m4 < m3): m4 = m3 - abs(m3)*0.1 - 1e-6
-    #                 if not (m4 < m1): m4 = min(m4, m1 - abs(m1)*0.1 - 1e-6)
-
-    #                 x_new[0:4] = [m1, m2, m3, m4]
-    #                 x_new = np.array(x_new)
-    #                 print(f"Adjusted candidate: {x_new}")
-        
-                    
-    #             # print(f"x_new: {x_new}") *t_reff
-    #             x_new[-1] = x_new[-1]*t_reff
-    #             f_new, c_new, mj_and_t_new = obj_con(x_new)
-
-
-
-    #             # Add the new row to all_inputs
-    #             all_inputs = np.vstack((all_inputs, mj_and_t_new))
-
-    #             # Add to population
-    #             population_all.append(population)
-    #             population = np.vstack((population, x_new))
-
-    #             f1_vals = np.vstack([f1_vals.reshape(-1,1), f_new[0]])
-    #             f2_vals = np.vstack([f2_vals.reshape(-1,1), f_new[1]])
-    #             c1_vals  = np.vstack([c1_vals.reshape(-1,1), c_new[0]])
-    #             c2_vals  = np.vstack([c2_vals.reshape(-1,1), c_new[1]])
-
-    #             print(f"\nGen {gen+1} Status:\n | Sampled Inputs:{x_new[:-1]}, {x_new[-1]/t_reff}|{x_new[-1]} min [m1, m2, m3, m4, t_index]|\n Outputs: G_f1: {f_new[0]*100} %, F_f2: {f_new[1]*100} % | GPur, FPur: {c_new[0]*100}%, {c_new[1]*100}%")
-
-    #     rec_raff_vals, rec_ext_vals, pur_raff_vals , pur_ext_vals = f1_vals, f2_vals, c1_vals, c2_vals
-    
-    #     return rec_raff_vals, rec_ext_vals, pur_raff_vals , pur_ext_vals , all_inputs
-
-
-
-
-    #%%
-    # --------------- FUNCTION EVALUATION SECTION
-    # ---------- SAMPLE RUN IF NECESSARY
-    # start_test = time.time()
-    # results = SMB(SMB_inputs)
-    # # ref:  [y_matrices, nx, t, t_sets, t_schedule, C_feed, m_in, m_out, raff_cprofile, ext_cprofile, raff_intgral_purity, raff_recov, ext_intgral_purity, ext_recov, raff_vflow, ext_vflow, Model_Acc, Expected_Acc, Error_percent]
-    # # STORE
-    # Raffinate_Purity = results[10]
-    # Raffinate_Recovery = results[11]
-    # Extract_Purity = results[12]
-    # Extract_Recovery = results[13]
-    # Mass_Balance_Error_Percent = results[-1]
-    # m_in = results[6]
-    # m_out = results[7]
-    # Model_Acc =  results[-3]
-    # Expected_Acc = results[-2]
-    # raff_cprofile = results[8]
-    # ext_cprofile= results[9]
-    # import matplotlib.pyplot as plt
-
-    # # Plotting the data
-    # plt.plot(results[2]/60/60, raff_cprofile[0], label='Raff CProfile 0')
-    # plt.plot(results[2]/60/60, raff_cprofile[1], label='Raff CProfile 1')
-    # plt.plot(results[2]/60/60, ext_cprofile[0], label='Ext CProfile 0')
-    # plt.plot(results[2]/60/60, ext_cprofile[1], label='Ext CProfile 1')
-
-    # # Adding labels and title
-    # plt.xlabel('Time, hrs')
-    # plt.ylabel('g/mL')
-    # plt.title('Comparison of Raff and Ext CProfiles')
-
-    # # Adding legend
-    # plt.legend()
-
-    # # Display the plot
-    # plt.grid(True)
-    # plt.tight_layout()
-    # plt.show()
-
-
-    # end_test = time.time()
-    # test_duration = end_test-start_test
-
-    # # DISPLAY
-    # print(f'\n\n TEST RESULTS : \n')
-    # print(f'Time Taken for 1 SMB Run: {test_duration/60} min')
-    # print(f'Model_Acc: {Model_Acc}')
-    # print(f'Expected_Acc: {Expected_Acc}')
-
-
-    # print(f'm_in: {m_in} g')
-    # print(f'm_out: {m_out} g ')
-    # print(f'Raffinate_Recovery: {Raffinate_Recovery} ')
-    # print(f'Extract_Recovery:  {Extract_Recovery}')
-    # print(f'Raffinate_Purity: {Raffinate_Purity} ')
-    # print(f'Extract_Purity: {Extract_Purity}')
-    # print(f'Mass_Balance_Error_Percent: {Mass_Balance_Error_Percent}%')
-
-    #%%
-
-    # ----- MAIN ROUTINE
-    
-    
-    # import json
-    # import numpy as np
-    # import os
 
     def load_initial_samples(json_inputs_path, json_outputs_path):
         """
@@ -1415,10 +1059,15 @@ def constrained_MOBO_func(batch, SMB):
     Q_max = Q_max/3.6 # l/h => ml/s
     Q_min = Q_min/3.6 # l/h => ml/s
     # SUMMARY
-    print(f'\n\n OPTIMIZATION INPUTS: \n')
+    print(f'\n\n OPTIMIZATION INPUTS SUMMARY: \n')
     print(f'Column Volume: {V_col} cm^3 | {V_col/1000} L')
     print(f'Column CSA: {A_col} cm^2')
     print(f'Column Length: {L} cm')
+    print(f'')
+    if grouping_type == []:
+        print(f'Configuration: {zone_config}, No grouping')
+    else:
+        print(f"Configuration: {zone_config}, With Grouping")
     print(f'Column Diameter: {d_col} cm')
     print(f'Optimization Budget: {optimization_budget}')
     print(f'Sampling Budget: {sampling_budget}')
@@ -1434,8 +1083,10 @@ def constrained_MOBO_func(batch, SMB):
     all_initial_inputs, all_initial_outputs = generate_initial_data(triangle_guess, sampling_budget)
     end_test = time.time()
     test_duration = end_test-start_test
-    
-    print(f'\n\n Generated Initial Samples in {test_duration/60} min')
+    print(f'----------------------')
+    print(f'\nGenerated Initial Samples in {test_duration/60} min')
+    print(f'----------------------')
+
     # import json
     # import numpy as np
     # import os
@@ -1454,7 +1105,6 @@ def constrained_MOBO_func(batch, SMB):
 
 #%%
     # OPTIMIZATION
-    print(f'running opt')
     
     rec_raff_vals, rec_ext_vals, pur_raff_vals, pur_ext_vals, all_inputs  = constrained_BO(optimization_budget, bounds, all_initial_inputs, all_initial_outputs, job_max_or_min, constraint_threshold, x_i)
 
