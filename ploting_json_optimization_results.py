@@ -85,7 +85,7 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, Names, purity_constraints, x
 
     axs[0].plot(iter_range, m4, label='m4')
     axs[0].scatter(iter_range, m4)
-
+    axs[0].legend()
     axs[0].set_xlabel(f"Iteration", fontsize=14)
     axs[0].set_ylabel(f"Flowrate Ratio", fontsize=14)
     axs[0].set_title("Flowrate Ratio Trajectory", fontsize=14)
@@ -108,7 +108,6 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, Names, purity_constraints, x
 
     plt.xlabel('Iteration', fontsize=14)
     plt.grid(True)
-    plt.legend(fontsize=14)
     plt.tick_params(axis='both', which='major', labelsize=12)
     plt.show()
     # plt.plot(iter_range, t_index, label='t_index_min')
