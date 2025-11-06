@@ -35,7 +35,7 @@ def find_pareto_front(x_vals, y_vals):
     return is_pareto
 
 
-def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp_1_name="Glucose", comp_2_name="Fructose", xy_padding = 1):
+def plot_raff_ext_pareto(inputs_path, outputs_path, Names, purity_constraints, xy_padding = 1):
     """
     Plots Pareto frontiers for raffinate (Glucose) and extract (Fructose).
     Also reports:
@@ -49,9 +49,11 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
     print("starting to unpack")
     inputs_dict, data_dict = load_inputs_outputs(inputs_path, outputs_path)
     print("done loading")
+    comp_1_name= Names[0]
+    comp_2_name= Names[1]
     # print(f'data_dict: {data_dict')
     # print(f'inputs_dict: {inputs_dict')
-    
+    purity_constraints = [purity_constraints[i]*100 for i in range(len(Names))]
     f1_vals = np.array(data_dict["rec_raff_vals"])  * 100  # Glucose recovery   (%)
     f2_vals = np.array(data_dict["rec_ext_vals"])   * 100   # Fructose recovery (%)
     c1_vals = np.array(data_dict["pur_raff_vals"])  * 100  # Glucose purity     (%)
@@ -66,25 +68,43 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
     m3 = np.array(inputs_dict["m3"])
     m4 = np.array(inputs_dict["m4"])
     t_index = np.array(inputs_dict["t_index_min"])
-    print(f'shape m1: {np.shape(m1)}')
-
-    plt.plot(iter_range, m1, label='m1')
-    plt.scatter(iter_range, m1)
+    # print(f'shape m1: {np.shape(m1)}')
 
 
-    plt.plot(iter_range, m2, label='m2')
-    plt.scatter(iter_range, m2)
+    fig, axs = plt.subplots(1, 2, figsize=(15,5))
 
-    plt.plot(iter_range, m3, label='m3')
-    plt.scatter(iter_range, m3)
+    axs[0].plot(iter_range, m1, label='m1')
+    axs[0].scatter(iter_range, m1)
 
-    plt.plot(iter_range, m4, label='m4')
-    plt.scatter(iter_range, m4)
 
-    # plt.plot(iter_range, t_index, label='Indexing Time (min)')
-    # plt.scatter(iter_range, t_index)
+    axs[0].plot(iter_range, m2, label='m2')
+    axs[0].scatter(iter_range, m2)
 
-    plt.title('Optimization Input Variables over Iterations', fontsize=16)
+    axs[0].plot(iter_range, m3, label='m3')
+    axs[0].scatter(iter_range, m3)
+
+    axs[0].plot(iter_range, m4, label='m4')
+    axs[0].scatter(iter_range, m4)
+
+    axs[0].set_xlabel(f"Iteration", fontsize=14)
+    axs[0].set_ylabel(f"Flowrate Ratio", fontsize=14)
+    axs[0].set_title("Flowrate Ratio Trajectory", fontsize=14)
+    axs[0].xaxis.set_major_locator(MaxNLocator(integer=True, prune='both', nbins=iter_num))
+
+
+    axs[0].grid(True)
+    
+
+    axs[1].plot(iter_range, t_index, label='Indexing Time (min)')
+    axs[1].scatter(iter_range, t_index)
+    axs[1].set_xlabel(f"Iteration", fontsize=14)
+    axs[1].set_ylabel(f"Indexing Time (min)", fontsize=14)
+    axs[1].set_title("Indexing Time Trajectory", fontsize=14)
+    axs[1].xaxis.set_major_locator(MaxNLocator(integer=True, prune='both', nbins=iter_num))
+
+    axs[1].grid(True)
+
+    # plt.title('Optimization Input Variables over Iterations', fontsize=16)
 
     plt.xlabel('Iteration', fontsize=14)
     plt.grid(True)
@@ -98,9 +118,9 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
     comp2_mask = find_pareto_front(f2_vals, c2_vals)
     both_mask = comp1_mask & comp2_mask
 
-
-    # ---- PLOTTING 1
-    fig, axs = plt.subplots(1, 2, figsize=(12, 10))
+    # -----------------------------------------------------------
+    # ---- PLOTTING 2: 
+    fig, axs = plt.subplots(1, 2, figsize=(15,5))
 
 
     axs[0].scatter(iter_range, f1_vals, color='red', label=f'Raffiante Recovery (%)')
@@ -115,7 +135,7 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
     axs[0].set_title("Recovery Trade-off Trajectories", fontsize=14)
     axs[0].grid(True)
     axs[0].set_ylim(0 - xy_padding, 100 + xy_padding)
-
+    axs[0].xaxis.set_major_locator(MaxNLocator(integer=True, prune='both', nbins=iter_num))
     
     axs[0].tick_params(axis='both', which='major', labelsize=12)
     axs[0].legend()
@@ -131,10 +151,14 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
     axs[1].set_ylabel(f"Purity (%)", fontsize=14)
     axs[1].set_title("Purity Trade-off Trajectories", fontsize=14)
     axs[1].grid(True)
-    axs[1].axhline(purity_constraint, color='k', linestyle='--', linewidth=1.5,
-                   label=f'Constraint: {purity_constraint:.1f}%')
+    axs[1].axhline(purity_constraints[0], color='k', linestyle='--', linewidth=1.5,
+                   label=f'{Names[0]} Constraint: {purity_constraints[0]:.1f}%')
+    
+    axs[1].axhline(purity_constraints[1], color='k', linestyle='--', linewidth=1.5,
+                   label=f'{Names[1]} Constraint: {purity_constraints[1]:.1f}%')
 
     axs[1].set_ylim(0 - xy_padding, 100 + xy_padding)
+    axs[1].xaxis.set_major_locator(MaxNLocator(integer=True, prune='both', nbins=iter_num))
     axs[1].tick_params(axis='both', which='major', labelsize=12)
     axs[1].legend()
     plt.show()
@@ -144,7 +168,7 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
 
     # ---PLOTTING 2
 
-    fig, axs = plt.subplots(1, 2, figsize=(12, 10))
+    fig, axs = plt.subplots(1, 2, figsize=(15,5))
 
     # Raffinate (Glucose)
     # Normalize indices to [0, 1] for colormap mapping
@@ -155,7 +179,7 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
     axs[0].scatter(f1_vals, f2_vals, color=colors)
 
     axs[0].set_xlabel(f"{comp_1_name} Raffinate Recovery (%)", fontsize=14)
-    axs[0].set_ylabel(f"{comp_1_name} Extract Recovery (%)", fontsize=14)
+    axs[0].set_ylabel(f"{comp_2_name} Extract Recovery (%)", fontsize=14)
     axs[0].set_title("Recovery Trade-off", fontsize=14)
     axs[0].grid(True)
 
@@ -172,13 +196,14 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
 
     # Plot with grayscale gradient
     axs[1].scatter(c1_vals, c2_vals, color=colors)
-    axs[1].axvline(purity_constraint, color='k', linestyle='--', linewidth=1.5,
-                   label=f'Constraint: {purity_constraint:.1f}%')
-    axs[1].axhline(purity_constraint, color='k', linestyle='--', linewidth=1.5,
-                   label=f'Constraint: {purity_constraint:.1f}%')
+    axs[1].axvline(purity_constraints[0], color='k', linestyle='--', linewidth=1.5,
+                   label=f'{Names[0]} Constraint: {purity_constraints[1]:.1f}%')
+    
+    axs[1].axhline(purity_constraints[1], color='k', linestyle='--', linewidth=1.5,
+                label=f'{Names[1]} Constraint: {purity_constraints[1]:.1f}%')
     
     axs[1].set_xlabel(f"{comp_1_name} Raffinate Purity (%)", fontsize=14)
-    axs[1].set_ylabel(f"{comp_1_name} Extract Purity (%)", fontsize=14)
+    axs[1].set_ylabel(f"{comp_2_name} Extract Purity (%)", fontsize=14)
     axs[1].set_title("Purity Trade-off", fontsize=14)
     axs[1].grid(True)
     axs[1].tick_params(axis='both', which='major', labelsize=12)
@@ -226,8 +251,8 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
     print(f"Dual-optimal points (both fronts): {np.sum(both_mask)}\n")
 
     # --- FEASIBILITY TEST (Purity ≥ threshold) ---
-    feasible_mask = (c1_vals >= purity_constraint) & (c2_vals >= purity_constraint)
-    print(f"Feasible points (Purity ≥ {purity_constraint}%): {np.sum(feasible_mask)}\n")
+    feasible_mask = (c1_vals >= purity_constraints[0]) & (c2_vals >= purity_constraints[0])
+    print(f"Feasible points (Purity ≥ {purity_constraints[0]}%): {np.sum(feasible_mask)}\n")
 
     # --- REPORT FEASIBLE POINTS IN TABLE ---
     if np.sum(feasible_mask) > 0:
@@ -261,15 +286,17 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
         print("-" * 80)
 
     # --- PLOTTING ---
-    fig, axs = plt.subplots(1, 2, figsize=(12, 10))
+    fig, axs = plt.subplots(1, 2, figsize=(15,5))
 
     # Raffinate (Glucose)
     axs[0].scatter(c1_vals[~comp1_mask], f1_vals[~comp1_mask], color='lightgray', label="Non-Pareto")
     axs[0].scatter(c1_vals[comp1_mask], f1_vals[comp1_mask], color='red', facecolors='none', marker='o',
                    label=f"{comp_1_name} Pareto Frontier")
     axs[0].scatter(c1_vals[both_mask], f1_vals[both_mask], color='red', marker='o', label="Dual Optimal")
-    axs[0].axvline(purity_constraint, color='k', linestyle='--', linewidth=1.5,
-                   label=f'Constraint: {purity_constraint:.1f}%')
+    axs[0].axvline(purity_constraints[0], color='k', linestyle='--', linewidth=1.5,
+                   label=f'{Names[0]} Constraint: {purity_constraints[0]:.1f}%')
+    
+
 
     # initalize:
     pur_sorted = c1_vals[comp1_mask].copy()
@@ -303,8 +330,8 @@ def plot_raff_ext_pareto(inputs_path, outputs_path, purity_constraint=99.5, comp
     axs[1].scatter(c2_vals[comp2_mask], f2_vals[comp2_mask], color='green', facecolors='none', marker='o',
                    label=f"{comp_2_name} Pareto Frontier")
     axs[1].scatter(c2_vals[both_mask], f2_vals[both_mask], color='green', marker='o', label="Dual Optimal")
-    axs[1].axvline(purity_constraint, color='k', linestyle='--', linewidth=1.5,
-                   label=f'Constraint: {purity_constraint:.1f}%')
+    axs[1].axvline(purity_constraints[1], color='k', linestyle='--', linewidth=1.5,
+                   label=f'{Names[1]} Constraint: {purity_constraints[1]:.1f}%')
 
     # initalize:
     pur_sorted = c2_vals[comp2_mask].copy()

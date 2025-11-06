@@ -1114,7 +1114,7 @@ def constrained_MOBO_func(batch, SMB):
 #%%
     # ----------- SAVE
     # Get snapshot of results in console:
-    output_check = {np.concatenate((rec_raff_vals, rec_ext_vals, pur_raff_vals, pur_ext_vals), axis=1)}
+    output_check = np.concatenate((rec_raff_vals, rec_ext_vals, pur_raff_vals, pur_ext_vals), axis=1)*100
     print(f'\n\nSUMMARY MATRICES:\nInputs Matrix\ncolumns:[m1, m2, m3, m4, t_index (min)]:\n {all_inputs}')
     print(f'Outputs Matrix\ncolumns:[Raff_rec, Ext_rec, Raff_pur, Ext_pur]:\n {output_check}')
 
